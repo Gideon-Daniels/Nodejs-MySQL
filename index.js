@@ -70,7 +70,7 @@ function handleRequest(request, response) {
       response.writeHead(200, { "Content-Type": "text/html" });
       // Poor man's templating system: Replace "DBCONTENT" in page HTML with
       // the actual content we received from the database
-      response.writeHead(pageContent.replace("DBCONTENT", contents));
+      response.write(pageContent.replace("DBCONTENT", contents));
       response.end();
     });
   }
@@ -133,10 +133,17 @@ function addContentToDatabase(content, callback) {
     database: "node",
   });
 
-  connection.query("INSERT INTO test (content) VALUES (?)", function (err) {
-    if (err) {
-      console.log('Could not insert content "' + content + '" into database.');
+  connection.query(
+    "INSERT INTO test (content) VALUES (?)",
+    content,
+    function (err) {
+      if (err) {
+        console.log(
+          'Could not insert content "' + content + '" into database.',
+          err
+        );
+      }
+      callback();
     }
-    callback();
-  });
+  );
 }
