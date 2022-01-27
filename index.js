@@ -14,30 +14,31 @@ http.createServer(handleRequest).listen(8888);
 function handleRequest(request, response) {
   // Page HTML as one big string, with placeholder "DBCONTENT" for data from
   // the database
-
-  var pageContent =
-    "<html>" +
-    "<head>" +
-    '<meta http-equiv="Content-Type" ' +
-    'content="text/html; charset=UTF-8" />' +
-    "</head>" +
-    "<body>" +
-    '<form action="/add" method="post">' +
-    '<input type="text" name="content">' +
-    '<input type="submit" value="Add content" />' +
-    "</form>" +
-    "<div>" +
-    "<strong>Content in database:</strong>" +
-    "<pre>" +
-    "DBCONTENT" +
-    "</pre>" +
-    "</div>" +
-    '<form action="/" method="get">' +
-    '<input type="text" name="q">' +
-    '<input type="submit" value="Filter content" />' +
-    "</form>" +
-    "</body>" +
-    "</html>";
+  console.log("listening to port ....");
+  var pageContent = `
+    <html>
+      <head>
+        <meta http-equiv ="Content-Type" content="text/html; charset=UTF-8" />
+      </head>
+      <body>
+        <form action="/add" method="post">
+          <input type="text" name="content">
+          <input type="submit" value="Add content" />
+        </form>
+        <div>
+          <strong>Content in database:</strong>
+          <pre>
+            DBCONTENT
+          </pre>
+        </div>
+        <form action="/" method="get">
+          <input type="text" name="q">
+          <input type="submit" value="Filter content" />
+        </form>
+      </body>
+    </html>
+   
+   `;
 
   //Parsing the requested URL path in order to distinguish between
   // the / page and the /add route
@@ -82,16 +83,18 @@ function handleRequest(request, response) {
 function getContentsFromDatabase(filter, callback) {
   var connection = mysql.createConnection({
     host: "localhost",
-    user: "root",
-    password: "root",
+    user: "gideon",
+    password: "#Gideon1234",
     database: "node",
   });
   var query;
   var resultsAsString = "";
 
   if (filter) {
+    filter = filter + "%";
     query = connection.query(
-      "SELECT id, content FROM test " + 'WHERE content LIKE "' + filter + '%"'
+      "SELECT id, content FROM test WHERE content LIKE ?",
+      filter
     );
   } else {
     query = connection.query("SELECT id, content FROM test");
@@ -125,20 +128,15 @@ function getContentsFromDatabase(filter, callback) {
 function addContentToDatabase(content, callback) {
   var connection = mysql.createConnection({
     host: "localhost",
-    user: "root",
-    password: "root",
+    user: "gideon",
+    password: "#Gideon1234",
     database: "node",
   });
 
-  connection.query(
-    "INSERT INTO test (content) " + 'VALUES ("' + content + '")',
-    function (err) {
-      if (err) {
-        console.log(
-          'Could not insert content "' + content + '" into database.'
-        );
-      }
-      callback();
+  connection.query("INSERT INTO test (content) VALUES (?)", function (err) {
+    if (err) {
+      console.log('Could not insert content "' + content + '" into database.');
     }
-  );
+    callback();
+  });
 }
